@@ -365,20 +365,26 @@ const Tools = {
             }
 
         } catch (error) {
-            console.warn('Link Connection Failed:', error);
-            // Fallback to Mock if Proxy isn't running, but warn user
-            if (username.toLowerCase() === 'instagram') {
-                AppStore.setProfile({
-                    username: 'instagram',
-                    realName: 'Instagram',
-                    bio: 'Making the world closer.',
-                    avatar: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png',
-                    stats: { followers: '699M', following: '50', posts: '10k' }
-                });
-                alert('Used MOCK data. To get real data, run "node server.js" in your terminal.');
-            } else {
-                alert(`Connection Failed: ${error.message}.\n\nTo enable Fetch, you must run the Bridge:\n1. Open Terminal\n2. Run: node server.js`);
-            }
+            console.warn('Live Fetch Failed, switching to Mock Data:', error);
+
+            // Graceful Fallback: Load Mock Data
+            // This ensures the deployed site is usable even if the serverless function crashes.
+            const mockProfile = {
+                username: username,
+                realName: `${username} (Demo)`,
+                bio: 'Live fetch failed (likely Vercel timeout). Loaded Demo Data.',
+                avatar: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+                fetched: true,
+                stats: { followers: '10k', following: '500', posts: '99' }
+            };
+
+            // Mock Images (Placeholders)
+            const mockImages = Array.from({ length: 9 }).map((_, i) => `https://picsum.photos/400/500?random=${i}`);
+
+            alert(`Note: Live Instagram Fetch is restricted on the cloud demo.\nLoaded Mock Data for "${username}" instead.`);
+
+            AppStore.setProfile(mockProfile);
+            AppStore.populateGrid(mockImages);
         } finally {
             if (btn) {
                 btn.textContent = originalText;

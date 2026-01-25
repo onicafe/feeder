@@ -23,7 +23,7 @@ app.get('/api/user/:username', async (req, res) => {
             chromium.setGraphicsMode = false;
 
             browser = await puppeteer.launch({
-                args: chromium.args,
+                args: [...chromium.args, '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote'],
                 defaultViewport: chromium.defaultViewport,
                 executablePath: await chromium.executablePath(),
                 headless: chromium.headless,

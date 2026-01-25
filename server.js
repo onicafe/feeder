@@ -6,75 +6,53 @@ const PORT = 3000;
 
 app.use(cors());
 
-// HTTP-based Scraper (Via CORS Proxy to bypass Vercel Block)
+// HTTP-based Scraper (Mobile UA Strategy)
 app.get('/api/user/:username', async (req, res) => {
     const { username } = req.params;
-    console.log(`[Proxy] Fetching for: ${username}`);
+    console.log(`[Scraper] Fetching for: ${username}`);
 
     try {
-        // Strategy: Use a public CORS proxy that runs server-side (like allorigins)
-        // This often bypasses the strict "Datacenter IP" block Instagram puts on Vercel.
+        // Strategy: Impersonate a Mobile App/Browser to bypass Desktop Login Wall
+        // This UA is from a popular PHP scraper that is known to work
+        const mobileUA = 'Instagram 250.0.0.21.109 Android (29/10; 420dpi; 1080x2260; samsung; SM-G960F; starlte; samsungexynos9810; en_US; 397184279)';
 
-        // Target: Instagram Profile (HTML)
         const targetUrl = `https://www.instagram.com/${username}/`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
-        const response = await fetch(proxyUrl);
+        const response = await fetch(targetUrl, {
+            headers: {
+                'User-Agent': mobileUA,
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Upgrade-Insecure-Requests': '1'
+            }
+        });
 
         if (!response.ok) {
-            throw new Error(`Proxy Error: ${response.status}`);
+            throw new Error(`Instagram Error: ${response.status}`);
         }
 
-        const data = await response.json();
-        const html = data.contents; // allorigins returns { contents: "<html>..." }
+        const html = await response.text();
+        console.log(`[Scraper] Downloaded ${html.length} bytes.`);
 
-        if (!html || html.length < 1000) {
-            console.warn('[Proxy] Content suspiciously short:', html);
-            // If we got a weird response, throw to trigger fallback
-            if (html.includes('Login')) throw new Error('Instagram Login Wall (via Proxy)');
-        }
-
-        console.log(`[Proxy] Downloaded via AllOrigins: ${html.length} bytes.`);
-
-        // 1. Parse Meta Data (OG Tags)
+        // 1. Parse Meta Data (OG Tags) - These are usually present even in Mobile View
         const getMeta = (prop) => {
-            const regex = new RegExp(`<meta property="${prop}" content="([^"]+)"`);
+            const regex = new RegExp(`<meta (?:property|name)="${prop}" content="([^"]+)"`);
             const match = html.match(regex);
             return match ? match[1] : null;
         };
 
         const metaData = {
-            title: getMeta('og:title') || `${username} on Instagram`,
+            title: getMeta('og:title') || `${username}`,
             image: getMeta('og:image'),
             description: getMeta('og:description') || getMeta('description')
         };
 
-        // 2. Regex Deep Scan for Images (Robust Regex)
-        // Challenge: URLs in scripts are escaped (https:\/\/...)
-        // We match: http(s) + optional escape + colon + optional escape + slash + ...
-        const urlRegex = /https?:\\?\/\\?\/[^"'\s<>]*(?:cdninstagram|scontent|fbcdn)[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
-
-        const allMatches = html.match(urlRegex) || [];
-
-        const uniquePosts = [...new Set(allMatches)].map(url => {
-            // Fix escaped slashes (JSON format -> Normal)
-            return url.replace(/\\\//g, '/').replace(/\\u0026/g, '&');
-        }).filter(url => {
-            // Filter out static assets (emojis, sprites)
-            if (url.includes('static.cdninstagram.com')) return false;
-            // Filter out tiny thumbnails (s150x150, p50x50) 
-            if (url.includes('/s150x150/') || url.includes('/p50x50/')) return false;
-
-            return true;
-        });
-
-        // Try to filter pfp
-        const pfp = metaData.image;
-        const finalPosts = uniquePosts.filter(url => url !== pfp).slice(0, 12);
-
-        // 3. Parse Stats/Bio
+        // 2. Parse Stats from Description
+        // "1,667 Followers, 208 Following, 12 Posts - ..."
         let stats = { followers: '0', following: '0', posts: '0' };
-        let bio = '';
 
         if (metaData.description) {
             const statsMatch = metaData.description.match(/^([0-9.,BKMN]+)\s+Followers,\s+([0-9.,BKMN]+)\s+Following,\s+([0-9.,BKMN]+)\s+Posts/i);
@@ -85,25 +63,43 @@ app.get('/api/user/:username', async (req, res) => {
             }
         }
 
+        // 3. Scan for Images (Best Effort)
+        // Mobile HTML often doesn't have the grid, but might have some assets.
+        // We look for any large JPEG that isn't the profile pic.
+        const urlRegex = /https:\/\/[^"'\s<>]*(?:cdninstagram|scontent|fbcdn)[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
+        const allMatches = html.match(urlRegex) || [];
+
+        const uniquePosts = [...new Set(allMatches)].filter(url => {
+            url = url.replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+            if (url.includes('static.cdninstagram.com')) return false;
+            if (url.includes('/s150x150/') || url.includes('/p50x50/')) return false;
+            if (url === metaData.image) return false;
+            return true;
+        }).slice(0, 12);
+
         const profile = {
             username: username,
-            realName: username, // Regex name parsing is flaky, skipping
+            realName: username,
             bio: metaData.description,
-            avatar: pfp || 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+            avatar: metaData.image || 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
             stats: stats,
-            posts: finalPosts
+            posts: uniquePosts
         };
 
-        if (finalPosts.length === 0) {
-            throw new Error('No images found (Login Wall or Private Account)');
+        // Success Check
+        // If we found the profile (stats exist), we return success even if posts are empty.
+        // This allows the UI to show the profile header at least.
+        if (stats.followers !== '0' || uniquePosts.length > 0) {
+            console.log(`[Scraper] Success. Title: ${metaData.title}, Images: ${uniquePosts.length}`);
+            res.json(profile);
+        } else {
+            console.warn('[Scraper] Failed to find profile data.');
+            if (html.includes('Login')) throw new Error('Login Wall Detected');
+            throw new Error('Profile not found or Private');
         }
 
-        console.log(`[Proxy] Success. Found ${finalPosts.length} images.`);
-        res.json(profile);
-
     } catch (error) {
-        console.error('[Proxy] Error:', error.message);
-        // Forward error as JSON so frontend can explain it
+        console.error('[Scraper] Error:', error.message);
         res.status(500).json({ error: error.message });
     }
 });

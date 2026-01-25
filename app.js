@@ -351,11 +351,12 @@ const Tools = {
             // Try Local Proxy / Vercel API
             const response = await fetch(`${apiBase}/api/user/${username}`);
 
-            if (!response.ok) throw new Error('Proxy unreachable or User not found');
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || response.statusText || 'Fetch failed');
+            }
 
             const data = await response.json();
-
-            // Pass full data object to updated setProfile
             AppStore.setProfile(data);
 
             if (data.posts && data.posts.length > 0) {

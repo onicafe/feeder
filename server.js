@@ -28,13 +28,16 @@ app.get('/api/user/:username', async (req, res) => {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status}`);
+            // Forward the upstream status code (e.g. 404 or 403)
+            return res.status(response.status).json({
+                error: `Instagram Error: ${response.status} ${response.statusText}`
+            });
         }
 
         const html = await response.text();
         console.log(`[Proxy] Downloaded ${html.length} bytes.`);
 
-        // 1. Parse Meta Data (OG Tags)
+        // ... (Parsing Logic) ...
         const getMeta = (prop) => {
             const regex = new RegExp(`<meta property="${prop}" content="([^"]+)"`);
             const match = html.match(regex);

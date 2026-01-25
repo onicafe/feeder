@@ -51,16 +51,24 @@ app.get('/api/user/:username', async (req, res) => {
         };
 
         // 2. Regex Deep Scan for Images
-        // Find URLs ending in jpg/png/heic (loosely)
-        // Instagram images often look like: https://scontent... .jpg?stp=...
-        const urlRegex = /https:\/\/[^"'\s]+\.(jpg|png|webp|heic)/g;
+        // Challenge: Instagram images are signed (Require ?_nc_ht=... etc)
+        // We must capture the FULL URL until a quote or whitespace.
+
+        // Look for string starting with https, containing cdninstagram, ending at " or ' or whitespace
+        const urlRegex = /https:\/\/[^"'\s<>]*cdninstagram[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
+
         const allMatches = html.match(urlRegex) || [];
 
         const rejected = [];
         const uniquePosts = [...new Set(allMatches)].filter(url => {
-            // Filter out static assets, emojis, or the profile pic itself (if duplicate)
+            // Decoding unicode matches if any (JSON often has \u0026)
+            url = url.replace(/\\u0026/g, '&');
+
+            // Filter out static assets (emojis, sprites)
             if (url.includes('static.cdninstagram.com')) return false;
-            // Filter out small thumbnails if possible (s150x150) - hard to detect in raw url sometimes
+            // Filter out tiny thumbnails (s150x150, p50x50) 
+            if (url.includes('/s150x150/') || url.includes('/p50x50/')) return false;
+
             return true;
         });
 

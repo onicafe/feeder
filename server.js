@@ -50,16 +50,21 @@ app.get('/api/user/:username', async (req, res) => {
         };
 
         // 2. Regex Deep Scan for Images (Robust Regex)
-        // Capture everything from https... to jpg/png/heic without checking quotes (looser)
-        // But ensures it contains 'cdninstagram' or 'scontent'
-        const urlRegex = /https:\/\/[^"'\s<>]*(?:cdninstagram|scontent|fbcdn)[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
+        // Challenge: URLs in scripts are escaped (https:\/\/...)
+        // We match: http(s) + optional escape + colon + optional escape + slash + ...
+        const urlRegex = /https?:\\?\/\\?\/[^"'\s<>]*(?:cdninstagram|scontent|fbcdn)[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
 
         const allMatches = html.match(urlRegex) || [];
 
-        const uniquePosts = [...new Set(allMatches)].filter(url => {
-            url = url.replace(/\\u0026/g, '&');
+        const uniquePosts = [...new Set(allMatches)].map(url => {
+            // Fix escaped slashes (JSON format -> Normal)
+            return url.replace(/\\\//g, '/').replace(/\\u0026/g, '&');
+        }).filter(url => {
+            // Filter out static assets (emojis, sprites)
             if (url.includes('static.cdninstagram.com')) return false;
+            // Filter out tiny thumbnails (s150x150, p50x50) 
             if (url.includes('/s150x150/') || url.includes('/p50x50/')) return false;
+
             return true;
         });
 

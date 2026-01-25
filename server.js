@@ -14,10 +14,29 @@ app.get('/api/user/:username', async (req, res) => {
 
     let browser;
     try {
-        browser = await puppeteer.launch({
-            headless: "new",
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--lang=en-US,en']
-        });
+        if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+            // Production (Vercel)
+            const chromium = require('@sparticuz/chromium');
+            const puppeteer = require('puppeteer-core');
+
+            // Adjust graphics mode for performance
+            chromium.setGraphicsMode = false;
+
+            browser = await puppeteer.launch({
+                args: chromium.args,
+                defaultViewport: chromium.defaultViewport,
+                executablePath: await chromium.executablePath(),
+                headless: chromium.headless,
+                ignoreHTTPSErrors: true
+            });
+        } else {
+            // Local Development
+            const puppeteer = require('puppeteer');
+            browser = await puppeteer.launch({
+                headless: "new",
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
+        }
         const page = await browser.newPage();
 
         // 1. Set robust headers to look like a real Chrome user

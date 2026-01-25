@@ -365,26 +365,16 @@ const Tools = {
             }
 
         } catch (error) {
-            console.warn('Live Fetch Failed, switching to Mock Data:', error);
+            console.error('Fetch Failed:', error);
 
-            // Graceful Fallback: Load Mock Data
-            // This ensures the deployed site is usable even if the serverless function crashes.
-            const mockProfile = {
-                username: username,
-                realName: `${username} (Demo)`,
-                bio: 'Live fetch failed (likely Vercel timeout). Loaded Demo Data.',
-                avatar: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
-                fetched: true,
-                stats: { followers: '10k', following: '500', posts: '99' }
-            };
+            // Check if local to give specific advice
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-            // Mock Images (Placeholders)
-            const mockImages = Array.from({ length: 9 }).map((_, i) => `https://picsum.photos/400/500?random=${i}`);
-
-            alert(`Note: Live Instagram Fetch is restricted on the cloud demo.\nLoaded Mock Data for "${username}" instead.`);
-
-            AppStore.setProfile(mockProfile);
-            AppStore.populateGrid(mockImages);
+            if (isLocal) {
+                alert(`Connection Failed: ${error.message}.\n\nTo enable Fetch, you must run the Bridge:\n1. Open Terminal\n2. Run: node server.js`);
+            } else {
+                alert(`Server Error: ${error.message}.\n\nThe Vercel Function may have crashed or timed out (common with Puppeteer on free tier). Check Vercel logs.`);
+            }
         } finally {
             if (btn) {
                 btn.textContent = originalText;

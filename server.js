@@ -43,14 +43,16 @@ app.get('/api/user/:username', async (req, res) => {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
 
         // 2. Go to page and wait for load
+        // 2. Go to page and wait for load (FASTER STRATEGY)
+        // 'networkidle2' is too slow for Vercel (waits for 500ms of no traffic).
+        // 'domcontentloaded' fires as soon as HTML is ready.
         const instagramUrl = `https://www.instagram.com/${username}/`;
-        await page.goto(instagramUrl, { waitUntil: 'networkidle2' });
+        await page.goto(instagramUrl, { waitUntil: 'domcontentloaded', timeout: 8000 }); // 8s timeout to fail fast
 
-        // Auto-Scroll to trigger hydration/lazy-load
+        // Auto-Scroll (Fast)
+        // We just toggle scroll once to trigger basic hydration, no waiting 3s.
         await page.evaluate(async () => {
-            // Scroll to bottom to force trigger
             window.scrollTo(0, document.body.scrollHeight);
-            await new Promise(resolve => setTimeout(resolve, 3000));
         });
 
         // Debug: Check title

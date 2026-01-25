@@ -6,38 +6,37 @@ const PORT = 3000;
 
 app.use(cors());
 
-// HTTP-based Scraper (No Puppeteer)
+// HTTP-based Scraper (Via CORS Proxy to bypass Vercel Block)
 app.get('/api/user/:username', async (req, res) => {
     const { username } = req.params;
-    console.log(`[Proxy] Fetching HTML for: ${username}`);
+    console.log(`[Proxy] Fetching for: ${username}`);
 
     try {
-        const instagramUrl = `https://www.instagram.com/${username}/`;
+        // Strategy: Use a public CORS proxy that runs server-side (like allorigins)
+        // This often bypasses the strict "Datacenter IP" block Instagram puts on Vercel.
 
-        // Use Fetch (Native in Node 18+)
-        const response = await fetch(instagramUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Upgrade-Insecure-Requests': '1'
-            }
-        });
+        // Target: Instagram Profile (HTML)
+        const targetUrl = `https://www.instagram.com/${username}/`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+        const response = await fetch(proxyUrl);
 
         if (!response.ok) {
-            // Forward the upstream status code (e.g. 404 or 403)
-            return res.status(response.status).json({
-                error: `Instagram Error: ${response.status} ${response.statusText}`
-            });
+            throw new Error(`Proxy Error: ${response.status}`);
         }
 
-        const html = await response.text();
-        console.log(`[Proxy] Downloaded ${html.length} bytes.`);
+        const data = await response.json();
+        const html = data.contents; // allorigins returns { contents: "<html>..." }
 
-        // ... (Parsing Logic) ...
+        if (!html || html.length < 1000) {
+            console.warn('[Proxy] Content suspiciously short:', html);
+            // If we got a weird response, throw to trigger fallback
+            if (html.includes('Login')) throw new Error('Instagram Login Wall (via Proxy)');
+        }
+
+        console.log(`[Proxy] Downloaded via AllOrigins: ${html.length} bytes.`);
+
+        // 1. Parse Meta Data (OG Tags)
         const getMeta = (prop) => {
             const regex = new RegExp(`<meta property="${prop}" content="([^"]+)"`);
             const match = html.match(regex);
@@ -50,25 +49,17 @@ app.get('/api/user/:username', async (req, res) => {
             description: getMeta('og:description') || getMeta('description')
         };
 
-        // 2. Regex Deep Scan for Images
-        // Challenge: Instagram images are signed (Require ?_nc_ht=... etc)
-        // We must capture the FULL URL until a quote or whitespace.
-
-        // Look for string starting with https, containing cdninstagram, ending at " or ' or whitespace
-        const urlRegex = /https:\/\/[^"'\s<>]*cdninstagram[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
+        // 2. Regex Deep Scan for Images (Robust Regex)
+        // Capture everything from https... to jpg/png/heic without checking quotes (looser)
+        // But ensures it contains 'cdninstagram' or 'scontent'
+        const urlRegex = /https:\/\/[^"'\s<>]*(?:cdninstagram|scontent|fbcdn)[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
 
         const allMatches = html.match(urlRegex) || [];
 
-        const rejected = [];
         const uniquePosts = [...new Set(allMatches)].filter(url => {
-            // Decoding unicode matches if any (JSON often has \u0026)
             url = url.replace(/\\u0026/g, '&');
-
-            // Filter out static assets (emojis, sprites)
             if (url.includes('static.cdninstagram.com')) return false;
-            // Filter out tiny thumbnails (s150x150, p50x50) 
             if (url.includes('/s150x150/') || url.includes('/p50x50/')) return false;
-
             return true;
         });
 
@@ -76,11 +67,9 @@ app.get('/api/user/:username', async (req, res) => {
         const pfp = metaData.image;
         const finalPosts = uniquePosts.filter(url => url !== pfp).slice(0, 12);
 
-        // 3. Parse Stats/Bio from Description
-        // "10k Followers, 50 Following, 100 Posts - ..."
+        // 3. Parse Stats/Bio
         let stats = { followers: '0', following: '0', posts: '0' };
         let bio = '';
-        let realName = username;
 
         if (metaData.description) {
             const statsMatch = metaData.description.match(/^([0-9.,BKMN]+)\s+Followers,\s+([0-9.,BKMN]+)\s+Following,\s+([0-9.,BKMN]+)\s+Posts/i);
@@ -89,27 +78,19 @@ app.get('/api/user/:username', async (req, res) => {
                 stats.following = statsMatch[2];
                 stats.posts = statsMatch[3];
             }
-
-            // Name/Bio extraction is messier with regex on raw HTML, we'll keep it simple
         }
 
         const profile = {
             username: username,
-            realName: realName,
-            bio: bio || metaData.description, // Fallback
+            realName: username, // Regex name parsing is flaky, skipping
+            bio: metaData.description,
             avatar: pfp || 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
             stats: stats,
             posts: finalPosts
         };
 
-        // Check against Login Wall
-        if (html.includes('Login • Instagram') || !metaData.title) {
-            console.warn('[Proxy] Possible Login Wall detected.');
-            // We might still have some images from public cache, but likely not.
-            if (finalPosts.length === 0) {
-                // Throwing error allows the Frontend to handle it (or show Mock if we enabled it, but we disabled it).
-                // Actually, let's return a special "Empty" state so user knows.
-            }
+        if (finalPosts.length === 0) {
+            throw new Error('No images found (Login Wall or Private Account)');
         }
 
         console.log(`[Proxy] Success. Found ${finalPosts.length} images.`);
@@ -117,7 +98,8 @@ app.get('/api/user/:username', async (req, res) => {
 
     } catch (error) {
         console.error('[Proxy] Error:', error.message);
-        res.status(500).json({ error: 'Failed to fetch Profile via HTTP.' });
+        // Forward error as JSON so frontend can explain it
+        res.status(500).json({ error: error.message });
     }
 });
 

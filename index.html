@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Resonant Cosmos | Grid Preview</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for premium feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="app-header">
+        <div class="logo">Feeder</div>
+    </header>
+
+    <main class="app-main">
+        <!-- Search Module (Hero) -->
+        <section class="search-hero">
+            <h1>Preview your Grid</h1>
+            <p class="subtitle">Enter an Instagram username to see how their latest posts look with your new content.
+            </p>
+
+            <div class="search-bar-hero">
+                <input type="text" id="usernameInput" placeholder="instagram" autofocus>
+                <button id="fetchBtn" class="btn-primary">Fetch Grid</button>
+            </div>
+
+            <!-- Instructions Module -->
+            <div class="instructions">
+                <h3>How to use:</h3>
+                <ol>
+                    <li><strong>Fetch</strong> a public profile to load its last 9 posts.</li>
+                    <li><strong>Upload</strong> images to preview them in the grid.</li>
+                    <li><strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Profile Header (Dynamic) -->
+        <!-- Profile Header (Dynamic) -->
+        <section id="profileSection" class="profile-header hidden">
+            <div class="avatar-wrapper">
+                <img id="profileAvatar" src="" alt="Avatar" class="avatar">
+            </div>
+            <div class="profile-info">
+                <div class="profile-text">
+                    <h2 id="profileRealName">Name</h2>
+                    <p id="profileHandle">@username</p>
+                    <p id="profileBio" class="bio-text">Never accept the world as it appears to be, dare to see it for
+                        what it could be.</p>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span id="statPosts" class="stat-value">0</span>
+                        <span class="stat-label">posts</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="statFollowers" class="stat-value">0</span>
+                        <span class="stat-label">followers</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="statFollowing" class="stat-value">0</span>
+                        <span class="stat-label">following</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grid Controls -->
+        <!-- Grid Controls -->
+        <section class="grid-controls">
+            <div class="ratio-toggles">
+                <button id="ratioSquare" class="ratio-btn">1:1</button>
+                <button id="ratioPortrait" class="ratio-btn active">4:5</button>
+            </div>
+
+            <button id="themeToggle" class="theme-btn-icon" title="Toggle Theme">
+                <!-- Moon Icon (Default for Light Mode) -->
+                <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <!-- Sun Icon (Hidden by default) -->
+                <svg class="icon-sun hidden" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+        </section>
+
+        <!-- Main Grid -->
+        <div class="grid-wrapper-relative">
+            <div id="gridContainer" class="grid-container ratio-4-5">
+                <!-- Items injected by JS -->
+            </div>
+
+            <!-- Sticky FAB Wrapper (Constrained) -->
+            <div class="fab-wrapper-sticky">
+                <button id="uploadBtn" class="fab-btn" title="Add Posts">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="ad-placeholder">
+            <span>Ad Space</span>
+        </div>
+        <p>&copy; 2026 Resonant Cosmos. Local Preview Tool.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

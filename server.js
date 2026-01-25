@@ -100,7 +100,27 @@ app.get('/api/user/:username', async (req, res) => {
 
     } catch (error) {
         console.error('[Scraper] Error:', error.message);
-        res.status(500).json({ error: error.message });
+        console.warn('[Scraper] Activating Mock Data Fallback');
+
+        // Fallback: Generate a believable profile so the UI doesn't crash
+        const mockProfile = {
+            username: username,
+            realName: `${username} (Restricted)`,
+            bio: "🔒 This profile is private or the scraper was blocked by Instagram. Showing placeholder content for demonstration.",
+            avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`, // Deterministic Avatar
+            stats: { followers: '---', following: '---', posts: '---' },
+            posts: [
+                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop',
+                'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop',
+                'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600&auto=format&fit=crop',
+                'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop',
+                'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop',
+                'https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?q=80&w=600&auto=format&fit=crop'
+            ],
+            isRestricted: true
+        };
+
+        res.json(mockProfile);
     }
 });
 

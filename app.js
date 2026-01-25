@@ -342,8 +342,14 @@ const Tools = {
         }
 
         try {
-            // Try Local Proxy first (B.L.A.S.T. Link Layer)
-            const response = await fetch(`http://localhost:3000/api/user/${username}`);
+            // Determine API URL
+            // If running locally (VS Code Live Server or similar), use localhost:3000
+            // If deployed (Vercel), use relative path /api/...
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const apiBase = isLocal ? 'http://localhost:3000' : '';
+
+            // Try Local Proxy / Vercel API
+            const response = await fetch(`${apiBase}/api/user/${username}`);
 
             if (!response.ok) throw new Error('Proxy unreachable or User not found');
 

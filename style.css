@@ -110,6 +110,66 @@ body {
     }
 }
 
+/* Grid Controls (Settings) */
+.grid-section {
+    width: 100%;
+}
+
+.grid-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+/* Ratio Toggles - Segmented Control Style */
+.ratio-toggles {
+    display: flex;
+    background: #efefef;
+    /* Light gray pill container */
+    padding: 4px;
+    border-radius: 99px;
+    /* Full pill radius */
+    gap: 4px;
+}
+
+.ratio-btn {
+    background: transparent;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 99px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ratio-btn:hover {
+    color: var(--text-primary);
+}
+
+.ratio-btn.active {
+    background: var(--bg-secondary);
+    /* White pill on top */
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* Subtle lift */
+    transform: scale(1.02);
+}
+
+/* Dark Mode Overrides for Ratio */
+[data-theme="dark"] .ratio-toggles {
+    background: #262626;
+}
+
+[data-theme="dark"] .ratio-btn.active {
+    background: #363636;
+    color: #fff;
+}
+
 .search-hero h1 {
     font-size: 3rem;
     font-weight: 800;
@@ -439,6 +499,50 @@ body {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
     padding: 60px 20px;
+}
+
+.app-footer a,
+.footer-link {
+    color: var(--accent-color) !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.app-footer a:hover {
+    text-decoration: underline;
+}
+
+.advertise-link {
+    display: block;
+    font-weight: 600;
+    /* Slightly lighter */
+    font-size: 0.85rem;
+    /* Way smaller */
+    color: var(--accent-color) !important;
+    text-decoration: none !important;
+    margin-bottom: 20px;
+    letter-spacing: 0.3px;
+    transition: transform 0.2s;
+    opacity: 0.9;
+    /* Subtle fade */
+}
+
+.advertise-link:hover {
+    transform: scale(1.02);
+}
+
+.ad-slot {
+    position: relative;
+    max-width: 100%;
+    margin: 0 auto 30px;
+}
+
+.mock-ad-image {
+    width: 40%;
+    /* 40% Width as requested */
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .ad-placeholder {

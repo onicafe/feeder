@@ -413,7 +413,7 @@ const Localization = {
             'stat_posts': 'posts',
             'stat_followers': 'followers',
             'stat_following': 'following',
-            'footer_copyright': '© 2026 Feeder by',
+            'footer_copyright': '© 2026 Feeder Made with 🩵 by',
             'footer_author': 'Iésu Jafé',
             'footer_group': 'Hex Group'
         },
@@ -429,7 +429,7 @@ const Localization = {
             'stat_posts': 'publicações',
             'stat_followers': 'seguidores',
             'stat_following': 'seguindo',
-            'footer_copyright': '© 2026 Feeder por',
+            'footer_copyright': '© 2026 Feeder Feito com 🩵 por',
             'footer_author': 'Iésu Jafé',
             'footer_group': 'Hex Group'
         },
@@ -445,7 +445,7 @@ const Localization = {
             'stat_posts': '投稿',
             'stat_followers': 'フォロワー',
             'stat_following': 'フォロー中',
-            'footer_copyright': '© 2026 Feeder 作成者:',
+            'footer_copyright': '© 2026 Feeder 開発 (🩵):',
             'footer_author': 'Iésu Jafé',
             'footer_group': 'Hex Group'
         },
@@ -461,7 +461,7 @@ const Localization = {
             'stat_posts': '帖子',
             'stat_followers': '粉丝',
             'stat_following': '关注',
-            'footer_copyright': '© 2026 Feeder 作者',
+            'footer_copyright': '© 2026 Feeder 制作 (🩵):',
             'footer_author': 'Iésu Jafé',
             'footer_group': 'Hex Group'
         }

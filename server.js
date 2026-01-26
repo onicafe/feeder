@@ -93,33 +93,36 @@ app.get('/api/user/:username', async (req, res) => {
             console.log(`[Scraper] Success. Title: ${metaData.title}, Images: ${uniquePosts.length}`);
             res.json(profile);
         } else {
-            console.warn('[Scraper] Failed to find profile data.');
-            if (html.includes('Login')) throw new Error('Login Wall Detected');
-            throw new Error('Profile not found or Private');
+            console.warn('[Scraper] Failed to find profile data. Using MOCK fallback.');
+            throw new Error('Login Wall Detected');
         }
 
     } catch (error) {
         console.error('[Scraper] Error:', error.message);
-        console.warn('[Scraper] Activating Mock Data Fallback');
+        console.log('[Scraper] Serving high-quality MOCK data for demo purposes.');
 
-        // Fallback: Generate a believable profile so the UI doesn't crash
+        // Mock Data Fallback
         const mockProfile = {
             username: username,
-            realName: `${username} (Restricted)`,
-            bio: "🔒 This profile is private or the scraper was blocked by Instagram. Showing placeholder content for demonstration.",
-            avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${username}`, // Deterministic Avatar
-            stats: { followers: '---', following: '---', posts: '---' },
+            realName: "Mock User (Demo)",
+            bio: "⚠️ Live fetching is blocked by Instagram. Showing demo data.\nSoftware Engineer 💻 | Coffee Lover ☕ | Traveler 🌍",
+            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+            stats: { followers: '1.2K', following: '450', posts: '12' },
             posts: [
-                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?q=80&w=600&auto=format&fit=crop'
-            ],
-            isRestricted: true
+                "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1481487484168-9b93099718e5?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1531297461136-82lw9z2x3z4y?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=500&q=80",
+                "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=500&q=80"
+            ]
         };
-
         res.json(mockProfile);
     }
 });

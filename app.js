@@ -147,6 +147,18 @@ const AppStore = {
 
 // --- Layer 2: Navigation / Logic (Render Engine) ---
 const RenderEngine = {
+    // Helper to proxy images (fixes 403 / CORS)
+    getProxyUrl(url) {
+        if (!url) return '';
+        if (url.startsWith('blob:') || url.startsWith('data:')) return url; // Local uploads don't need proxy
+
+        // Determine API Base
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+        const apiBase = isLocal ? 'http://localhost:3005' : '';
+
+        return `${apiBase}/api/proxy?url=${encodeURIComponent(url)}`;
+    },
+
     init() {
         this.gridEl = document.getElementById('gridContainer');
         this.profileEl = document.getElementById('profileSection');
@@ -173,7 +185,7 @@ const RenderEngine = {
             document.getElementById('profileBio').textContent = p.bio || '';
 
             // Image
-            document.getElementById('profileAvatar').src = p.avatar;
+            document.getElementById('profileAvatar').src = this.getProxyUrl(p.avatar);
 
             // Stats
             if (p.stats) {
@@ -194,7 +206,8 @@ const RenderEngine = {
 
             if (item.type !== 'empty' && item.url) {
                 const img = document.createElement('img');
-                img.src = item.url;
+                // Use Proxy for Instagram URLs
+                img.src = item.type === 'instagram_fetch' ? this.getProxyUrl(item.url) : item.url;
 
                 // Error Handling
                 img.onerror = function () {
@@ -345,8 +358,8 @@ const Tools = {
             // Determine API URL
             // If running locally (VS Code Live Server or similar), use localhost:3000
             // If deployed (Vercel), use relative path /api/...
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const apiBase = isLocal ? 'http://localhost:3000' : '';
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+            const apiBase = isLocal ? 'http://localhost:3005' : '';
 
             // Try Local Proxy / Vercel API
             const response = await fetch(`${apiBase}/api/user/${username}`);

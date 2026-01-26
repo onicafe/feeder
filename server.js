@@ -2,100 +2,79 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3005;
 
 app.use(cors());
 
-// HTTP-based Scraper (Mobile UA Strategy)
+// Validated Web Profile Info Scraper (Scrapfly Strategy)
 app.get('/api/user/:username', async (req, res) => {
     const { username } = req.params;
-    console.log(`[Scraper] Fetching for: ${username}`);
+    console.log(`[Scraper] Incoming request for: ${username}`);
 
     try {
-        // Strategy: Impersonate a Mobile App/Browser to bypass Desktop Login Wall
-        // This UA is from a popular PHP scraper that is known to work
-        const mobileUA = 'Instagram 250.0.0.21.109 Android (29/10; 420dpi; 1080x2260; samsung; SM-G960F; starlte; samsungexynos9810; en_US; 397184279)';
+        // Strategy: Use Instagram's internal Web Profile Info API
+        // This requires specific headers to mimic a browser request, especially x-ig-app-id
+        const targetUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
 
-        const targetUrl = `https://www.instagram.com/${username}/`;
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'x-ig-app-id': '936619743392459', // Critical for this endpoint
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': `https://www.instagram.com/${username}/`,
+            'Origin': 'https://www.instagram.com',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Dest': 'empty',
+            'X-Requested-With': 'XMLHttpRequest'
+        };
 
-        const response = await fetch(targetUrl, {
-            headers: {
-                'User-Agent': mobileUA,
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Upgrade-Insecure-Requests': '1'
-            }
-        });
+        // Add 10s Timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds
+
+        console.log(`[Scraper] Fetching upstream: ${targetUrl}`);
+
+        let response;
+        try {
+            response = await fetch(targetUrl, {
+                headers,
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+
+        console.log(`[Scraper] Upstream status: ${response.status}`);
 
         if (!response.ok) {
-            throw new Error(`Instagram Error: ${response.status}`);
+            throw new Error(`Instagram API Error: ${response.status}`);
         }
 
-        const html = await response.text();
-        console.log(`[Scraper] Downloaded ${html.length} bytes.`);
+        const data = await response.json();
+        const user = data.data && data.data.user;
 
-        // 1. Parse Meta Data (OG Tags) - These are usually present even in Mobile View
-        const getMeta = (prop) => {
-            const regex = new RegExp(`<meta (?:property|name)="${prop}" content="([^"]+)"`);
-            const match = html.match(regex);
-            return match ? match[1] : null;
-        };
-
-        const metaData = {
-            title: getMeta('og:title') || `${username}`,
-            image: getMeta('og:image'),
-            description: getMeta('og:description') || getMeta('description')
-        };
-
-        // 2. Parse Stats from Description
-        // "1,667 Followers, 208 Following, 12 Posts - ..."
-        let stats = { followers: '0', following: '0', posts: '0' };
-
-        if (metaData.description) {
-            const statsMatch = metaData.description.match(/^([0-9.,BKMN]+)\s+Followers,\s+([0-9.,BKMN]+)\s+Following,\s+([0-9.,BKMN]+)\s+Posts/i);
-            if (statsMatch) {
-                stats.followers = statsMatch[1];
-                stats.following = statsMatch[2];
-                stats.posts = statsMatch[3];
-            }
+        if (!user) {
+            throw new Error('User not found in API response');
         }
 
-        // 3. Scan for Images (Best Effort)
-        // Mobile HTML often doesn't have the grid, but might have some assets.
-        // We look for any large JPEG that isn't the profile pic.
-        const urlRegex = /https:\/\/[^"'\s<>]*(?:cdninstagram|scontent|fbcdn)[^"'\s<>]*?(?:jpg|png|heic|webp)[^"'\s<>]*/g;
-        const allMatches = html.match(urlRegex) || [];
-
-        const uniquePosts = [...new Set(allMatches)].filter(url => {
-            url = url.replace(/\\u0026/g, '&').replace(/\\\//g, '/');
-            if (url.includes('static.cdninstagram.com')) return false;
-            if (url.includes('/s150x150/') || url.includes('/p50x50/')) return false;
-            if (url === metaData.image) return false;
-            return true;
-        }).slice(0, 12);
-
+        // Map API response to our schema
         const profile = {
-            username: username,
-            realName: username,
-            bio: metaData.description,
-            avatar: metaData.image || 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
-            stats: stats,
-            posts: uniquePosts
+            username: user.username,
+            realName: user.full_name || user.username,
+            bio: user.biography,
+            avatar: user.profile_pic_url_hd || user.profile_pic_url,
+            stats: {
+                followers: user.edge_followed_by ? user.edge_followed_by.count.toLocaleString() : '0',
+                following: user.edge_follow ? user.edge_follow.count.toLocaleString() : '0',
+                posts: user.edge_owner_to_timeline_media ? user.edge_owner_to_timeline_media.count.toLocaleString() : '0'
+            },
+            posts: (user.edge_owner_to_timeline_media ? user.edge_owner_to_timeline_media.edges : []).map(edge => {
+                return edge.node.display_url;
+            }).slice(0, 12)
         };
 
-        // Success Check
-        // If we found the profile (stats exist), we return success even if posts are empty.
-        // This allows the UI to show the profile header at least.
-        if (stats.followers !== '0' || uniquePosts.length > 0) {
-            console.log(`[Scraper] Success. Title: ${metaData.title}, Images: ${uniquePosts.length}`);
-            res.json(profile);
-        } else {
-            console.warn('[Scraper] Failed to find profile data. Using MOCK fallback.');
-            throw new Error('Login Wall Detected');
-        }
+        console.log(`[Scraper] Success. Found ${profile.posts.length} posts.`);
+        res.json(profile);
 
     } catch (error) {
         console.error('[Scraper] Error:', error.message);
@@ -127,11 +106,39 @@ app.get('/api/user/:username', async (req, res) => {
     }
 });
 
+// Image Proxy to bypass Hotlink Protection / CORS
+app.get('/api/proxy', async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).send('Missing url param');
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        });
+
+        if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+
+        // Forward headers
+        res.setHeader('Content-Type', response.headers.get('content-type'));
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24h
+
+        // Pipe the stream
+        const arrayBuffer = await response.arrayBuffer();
+        res.send(Buffer.from(arrayBuffer));
+
+    } catch (error) {
+        console.error('[Proxy Error]', error.message);
+        res.status(500).send('Proxy Error');
+    }
+});
+
 // Export for Vercel
 module.exports = app;
 
 if (require.main === module) {
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`B.L.A.S.T. Bridge (HTTP Edition) running at http://localhost:${PORT}`);
     });
 }

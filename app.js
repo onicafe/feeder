@@ -416,7 +416,8 @@ const Localization = {
             'stat_following': 'following',
             'footer_copyright': '© 2026 Feeder by',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group'
+            'footer_group': 'Hex Group',
+            'ad_text': 'Advertise here for just R$9,90'
         },
         'pt': {
             'app_title': 'Visualize seu Grid',
@@ -432,7 +433,8 @@ const Localization = {
             'stat_following': 'seguindo',
             'footer_copyright': '© 2026 Feeder por',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group'
+            'footer_group': 'Hex Group',
+            'ad_text': 'Anuncie aqui por apenas R$9,90'
         },
         'ja': {
             'app_title': 'グリッドをプレビュー',
@@ -448,7 +450,8 @@ const Localization = {
             'stat_following': 'フォロー中',
             'footer_copyright': '© 2026 Feeder 作成者:',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group'
+            'footer_group': 'Hex Group',
+            'ad_text': 'たった R$9,90 でここに広告を出す'
         },
         'zh': {
             'app_title': '预览您的网格',
@@ -464,7 +467,8 @@ const Localization = {
             'stat_following': '关注',
             'footer_copyright': '© 2026 Feeder 作者',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group'
+            'footer_group': 'Hex Group',
+            'ad_text': '仅需 R$9,90 在此广告'
         }
     },
 
@@ -476,19 +480,13 @@ const Localization = {
     },
 
     detectLanguage() {
-        // 1. Force override via URL (e.g., ?lang=pt)
-        const params = new URLSearchParams(window.location.search);
-        const urlLang = params.get('lang');
+        // 1. Check URL Parameter ?lang=pt
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramLang = urlParams.get('lang');
 
-        if (urlLang && ['en', 'pt', 'ja', 'zh'].includes(urlLang)) {
-            this.currentLang = urlLang;
-            console.log(`[i18n] Forced via URL: ${this.currentLang}`);
-            return;
-        }
-
-        // 2. Browser Detection
+        // 2. Check Browser Language
         const browserLang = navigator.language || navigator.userLanguage;
-        const shortLang = browserLang.split('-')[0]; // 'pt-BR' -> 'pt'
+        const shortLang = paramLang || browserLang.split('-')[0]; // 'pt-BR' -> 'pt'
 
         if (['pt', 'ja', 'zh'].includes(shortLang)) {
             this.currentLang = shortLang;
@@ -496,7 +494,7 @@ const Localization = {
             this.currentLang = 'en'; // Default
         }
 
-        console.log(`[i18n] Detected: ${browserLang}, Using: ${this.currentLang}`);
+        console.log(`[i18n] Detected: ${shortLang} (URL/Nav), Using: ${this.currentLang}`);
     },
 
     applyTranslations() {

@@ -144,21 +144,20 @@
     </main>
 
     <footer class="app-footer">
-        <div class="ad-section">
-            <!-- Permanent Advertise Link (Always Visible) -->
-            <a href="https://wa.me/5584999034089?text=Quero%20anunciar%20no%20Feeder" target="_blank" class="ad-cta">
-                ANUNCIE AQUI POR APENAS R$ 9,90 <span style="font-weight: 400; font-size: 0.9em;">(Clique para
-                    conversar)</span>
+        <div class="ad-container">
+            <span class="ad-text-label" data-i18n="ad_text">Advertise here for just R$9,90</span>
+
+            <!-- Fallback Ad (Always Visible or Conditional) -->
+            <a href="https://wa.me/5584999034089" target="_blank" class="ad-fallback" title="Advertise with us">
+                <img src="ad_fallback.png" alt="Advertise Here" id="adImage">
             </a>
 
-            <!-- Ad Unit -->
-            <div class="ad-container">
-                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7467411748752837"
-                    data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            </div>
+            <!-- AdSense Auto Ads (Will overlay or displace if loaded) -->
+            <ins class="adsbygoogle" style="display:block; margin-top:20px;" data-ad-client="ca-pub-7467411748752837"
+                data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
         </div>
         <p class="copyright-text">
             <span data-i18n="footer_copyright">© 2026 Feeder by</span>

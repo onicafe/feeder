@@ -42,27 +42,28 @@
     <main class="app-main">
         <!-- Search Module (Hero) -->
         <section class="search-hero">
-            <h1>Preview your Grid</h1>
-            <p class="subtitle">Enter an Instagram username to see how their latest posts look with your new content.
+            <h1 data-i18n="app_title">Preview your Grid</h1>
+            <p class="subtitle" data-i18n="app_subtitle">Enter an Instagram username to see how their latest posts look
+                with your new content.
             </p>
 
             <div class="search-bar-hero">
                 <input type="text" id="usernameInput" placeholder="instagram" autofocus>
-                <button id="fetchBtn" class="btn-primary">Fetch Grid</button>
+                <button id="fetchBtn" class="btn-primary" data-i18n="btn_fetch">Fetch Grid</button>
             </div>
 
             <!-- Instructions Module -->
             <div class="instructions">
-                <h3>How to use:</h3>
+                <h3 data-i18n="how_to_title">How to use:</h3>
                 <ol>
-                    <li><strong>Fetch</strong> a public profile to load its last 9 posts.</li>
-                    <li><strong>Upload</strong> images to preview them in the grid.</li>
-                    <li><strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.</li>
+                    <li data-i18n="how_to_1"><strong>Fetch</strong> a public profile to load its last 9 posts.</li>
+                    <li data-i18n="how_to_2"><strong>Upload</strong> images to preview them in the grid.</li>
+                    <li data-i18n="how_to_3"><strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.
+                    </li>
                 </ol>
             </div>
         </section>
 
-        <!-- Profile Header (Dynamic) -->
         <!-- Profile Header (Dynamic) -->
         <section id="profileSection" class="profile-header hidden">
             <div class="avatar-wrapper">
@@ -79,15 +80,15 @@
                 <div class="stats-row">
                     <div class="stat-item">
                         <span id="statPosts" class="stat-value">0</span>
-                        <span class="stat-label">posts</span>
+                        <span class="stat-label" data-i18n="stat_posts">posts</span>
                     </div>
                     <div class="stat-item">
                         <span id="statFollowers" class="stat-value">0</span>
-                        <span class="stat-label">followers</span>
+                        <span class="stat-label" data-i18n="stat_followers">followers</span>
                     </div>
                     <div class="stat-item">
                         <span id="statFollowing" class="stat-value">0</span>
-                        <span class="stat-label">following</span>
+                        <span class="stat-label" data-i18n="stat_following">following</span>
                     </div>
                 </div>
             </div>
@@ -145,6 +146,13 @@
     <footer class="app-footer">
         <div class="ad-container">
             <!-- AdSense Auto Ads will likely place ads here or full-screen -->
+            <!-- Fallback Ad -->
+            <a href="https://wa.me/5584999034089?text=Quero%20anunciar%20no%20Feeder" target="_blank"
+                class="ad-fallback">
+                ANUNCIE AQUI POR APENAS R$ 9,90<br>
+                <span style="font-size: 0.8em; font-weight: 400;">(Clique para conversar)</span>
+            </a>
+
             <!-- We can also place a specific unit here if you create one later -->
             <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7467411748752837" data-ad-slot="auto"
                 data-ad-format="auto" data-full-width-responsive="true"></ins>
@@ -152,7 +160,13 @@
                 (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
         </div>
-        <p>&copy; 2026 Resonant Cosmos. Local Preview Tool.</p>
+        <p class="copyright-text">
+            <span data-i18n="footer_copyright">© 2026 Feeder by</span>
+            <a href="https://www.linkedin.com/in/iesujafe/" target="_blank" class="footer-link"
+                data-i18n="footer_author">Iésu Jafé</a>.
+            <a href="https://hex-portfolio-ochre.vercel.app/" target="_blank" class="footer-link"
+                data-i18n="footer_group">Hex Group</a>.
+        </p>
     </footer>
 
     <script src="app.js"></script>

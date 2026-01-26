@@ -370,35 +370,145 @@ body {
     border-color: var(--text-primary);
 }
 
+/* --- Main Layout Adjustments for Full Width --- */
+.app-main {
+    /* Remove padding to allow grid to touch edges */
+    padding: 20px 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+.search-hero,
+.profile-header,
+.grid-controls,
+.instructions {
+    /* Bring back padding for text content */
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 935px;
+    margin: 0 auto;
+}
+
+/* --- Main Grid --- */
+.grid-wrapper-relative {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    width: 100%;
+    padding-bottom: 120px;
+    /* More space for larger FAB */
+    margin: 0 auto;
+}
+
+/* --- Floating Action Button (Sticky) --- */
+.fab-wrapper-sticky {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 100;
+}
+
+.fab-btn {
+    /* Force size increase */
+    width: 80px !important;
+    height: 80px !important;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.fab-btn svg {
+    width: 40px;
+    height: 40px;
+}
+
+/* --- Footer --- */
+.app-footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding-bottom: 100px;
+}
+
+.footer-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+/* --- Ad Fallback --- */
+.ad-container {
+    margin: 20px auto;
+    max-width: 320px;
+    text-align: center;
+}
+
+.ad-fallback {
+    display: block;
+    background-color: var(--card-bg);
+    border: 2px dashed var(--accent-color);
+    color: var(--accent-color);
+    padding: 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.ad-fallback:hover {
+    background-color: var(--bg-secondary);
+    transform: translateY(-2px);
+}
+}
+
 /* Grid Container */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--grid-gap);
-    margin-bottom: 80px;
-    /* max-width: 935px; inherited from main */
+    gap: 2px;
+    /* Tighter gap for "almost all horizontal space" */
+    width: 100%;
+    padding-bottom: 100px;
+    /* Space for FAB */
+    margin: 0 auto;
 }
 
 /* Grid Aspect Ratios */
 .grid-item {
-    background-color: var(--bg-secondary);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
-    cursor: grab;
+    background-color: var(--card-bg);
     overflow: hidden;
-    transition: transform 0.2s ease;
-    border-radius: 2px;
-
-    /* Default Square */
+    cursor: grab;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    /* Default Square 1:1 */
     aspect-ratio: 1 / 1;
-
-    /* Flex Center for placeholders/empty */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 2rem;
+    color: var(--text-muted);
+    user-select: none;
+    border-radius: 2px;
 }
 
 /* 4:5 Vertical Ratio Modifier */
@@ -412,15 +522,20 @@ body {
     object-fit: cover;
     display: block;
     pointer-events: none;
+    /* Prevent browser drag of image, we drag container */
 }
 
 .grid-item:active {
     cursor: grabbing;
 }
 
+/* Drag State */
 .grid-item.dragging {
-    opacity: 0.4;
-    border: 2px dashed var(--accent-color);
+    opacity: 0.5;
+    transform: scale(0.95);
+    cursor: grabbing;
+    background-color: var(--accent);
+    z-index: 10;
 }
 
 /* Footer */

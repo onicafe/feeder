@@ -398,8 +398,135 @@ const Tools = {
     }
 };
 
+// --- Layer 4: Localization (i18n) ---
+const Localization = {
+    // Dictionary
+    translations: {
+        'en': {
+            'app_title': 'Preview your Grid',
+            'app_subtitle': 'Enter an Instagram username to see how their latest posts look with your new content.',
+            'input_placeholder': 'instagram',
+            'btn_fetch': 'Fetch Grid',
+            'how_to_title': 'How to use:',
+            'how_to_1': '<strong>Fetch</strong> a public profile to load its last 9 posts.',
+            'how_to_2': '<strong>Upload</strong> images to preview them in the grid.',
+            'how_to_3': '<strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.',
+            'stat_posts': 'posts',
+            'stat_followers': 'followers',
+            'stat_following': 'following',
+            'footer_copyright': '© 2026 Feeder by',
+            'footer_author': 'Iésu Jafé',
+            'footer_group': 'Hex Group'
+        },
+        'pt': {
+            'app_title': 'Visualize seu Grid',
+            'app_subtitle': 'Digite um usuário do Instagram para ver como os posts recentes ficam com seu novo conteúdo.',
+            'input_placeholder': 'usuário',
+            'btn_fetch': 'Buscar Grid',
+            'how_to_title': 'Como usar:',
+            'how_to_1': '<strong>Busque</strong> um perfil público para carregar os últimos 9 posts.',
+            'how_to_2': '<strong>Carregue</strong> imagens para pré-visualizar no grid.',
+            'how_to_3': '<strong>Arraste e Solte</strong> para organizar e encontrar a estética perfeita.',
+            'stat_posts': 'publicações',
+            'stat_followers': 'seguidores',
+            'stat_following': 'seguindo',
+            'footer_copyright': '© 2026 Feeder por',
+            'footer_author': 'Iésu Jafé',
+            'footer_group': 'Hex Group'
+        },
+        'ja': {
+            'app_title': 'グリッドをプレビュー',
+            'app_subtitle': 'Instagramのユーザー名を入力して、最新の投稿が新しいコンテンツとどのように見えるかを確認します。',
+            'input_placeholder': 'ユーザーネーム',
+            'btn_fetch': 'グリッドを取得',
+            'how_to_title': '使い方:',
+            'how_to_1': '<strong>取得</strong>: 公開プロフィールから最新の9つの投稿を読み込みます。',
+            'how_to_2': '<strong>アップロード</strong>: 画像をアップロードしてグリッドでプレビューします。',
+            'how_to_3': '<strong>ドラッグ＆ドロップ</strong>: 並べ替えて、完璧な美しさを見つけます。',
+            'stat_posts': '投稿',
+            'stat_followers': 'フォロワー',
+            'stat_following': 'フォロー中',
+            'footer_copyright': '© 2026 Feeder 作成者:',
+            'footer_author': 'Iésu Jafé',
+            'footer_group': 'Hex Group'
+        },
+        'zh': {
+            'app_title': '预览您的网格',
+            'app_subtitle': '输入Instagram用户名，查看其最新帖子与您的新内容的搭配效果。',
+            'input_placeholder': '用户名',
+            'btn_fetch': '获取网格',
+            'how_to_title': '如何使用:',
+            'how_to_1': '<strong>获取</strong> 公开资料以加载其最近的9篇帖子。',
+            'how_to_2': '<strong>上传</strong> 图片以在网格中预览。',
+            'how_to_3': '<strong>拖放</strong> 以重新排列并找到完美的审美。',
+            'stat_posts': '帖子',
+            'stat_followers': '粉丝',
+            'stat_following': '关注',
+            'footer_copyright': '© 2026 Feeder 作者',
+            'footer_author': 'Iésu Jafé',
+            'footer_group': 'Hex Group'
+        }
+    },
+
+    currentLang: 'en',
+
+    init() {
+        this.detectLanguage();
+        this.applyTranslations();
+    },
+
+    detectLanguage() {
+        // 1. Force override via URL (e.g., ?lang=pt)
+        const params = new URLSearchParams(window.location.search);
+        const urlLang = params.get('lang');
+
+        if (urlLang && ['en', 'pt', 'ja', 'zh'].includes(urlLang)) {
+            this.currentLang = urlLang;
+            console.log(`[i18n] Forced via URL: ${this.currentLang}`);
+            return;
+        }
+
+        // 2. Browser Detection
+        const browserLang = navigator.language || navigator.userLanguage;
+        const shortLang = browserLang.split('-')[0]; // 'pt-BR' -> 'pt'
+
+        if (['pt', 'ja', 'zh'].includes(shortLang)) {
+            this.currentLang = shortLang;
+        } else {
+            this.currentLang = 'en'; // Default
+        }
+
+        console.log(`[i18n] Detected: ${browserLang}, Using: ${this.currentLang}`);
+    },
+
+    applyTranslations() {
+        const dict = this.translations[this.currentLang];
+        if (!dict) return;
+
+        // Generic Elements with data-i18n
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) {
+                // If the translation contains HTML tags (like <strong>), use innerHTML
+                if (dict[key].includes('<')) {
+                    el.innerHTML = dict[key];
+                } else {
+                    el.textContent = dict[key];
+                }
+            }
+        });
+
+        // Specific placeholders
+        const input = document.getElementById('usernameInput');
+        if (input && dict['input_placeholder']) {
+            input.placeholder = dict['input_placeholder'];
+        }
+    }
+};
+
 // --- Protocol 0: Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     RenderEngine.init();
     Tools.init();
+    Localization.init(); // Init i18n
 });

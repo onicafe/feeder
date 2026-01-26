@@ -47,33 +47,34 @@
                 with your new content.
             </p>
 
-            <!-- Instructions Module (Moved Above Input) -->
+            <!-- Instructions Module (Moved Up) -->
             <div class="instructions">
                 <h3 data-i18n="how_to_title">How to use:</h3>
                 <ol>
-                    <li data-i18n="how_to_1">📸 <strong>Fetch</strong> a public profile to load its last 9 posts.</li>
-                    <li data-i18n="how_to_2">📤 <strong>Upload</strong> images to preview them in the grid.</li>
+                    <li data-i18n="how_to_1">🔍 <strong>Fetch</strong> a public profile to load its last 9 posts.</li>
+                    <li data-i18n="how_to_2">📸 <strong>Upload</strong> images to preview them in the grid.</li>
                     <li data-i18n="how_to_3">✨ <strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.
                     </li>
                 </ol>
             </div>
 
-            <div class="search-bar-hero" style="margin-top: 40px;"> <!-- Added margin for spacing -->
+            <div class="search-bar-hero">
                 <input type="text" id="usernameInput" placeholder="instagram" autofocus>
                 <button id="fetchBtn" class="btn-primary" data-i18n="btn_fetch">Fetch Grid</button>
             </div>
         </section>
 
         <!-- Profile Header (Dynamic) -->
-        <section id="profileSection" class="profile-header">
+        <section id="profileSection" class="profile-header hidden">
             <div class="avatar-wrapper">
-                <img id="profileAvatar" src="assets/default-avatar.png" onerror="this.src='https://via.placeholder.com/150?text=User'" alt="Avatar" class="avatar">
+                <img id="profileAvatar" src="" alt="Avatar" class="avatar">
             </div>
             <div class="profile-info">
                 <div class="profile-text">
-                    <h2 id="profileRealName">Your Name</h2>
+                    <h2 id="profileRealName">Name</h2>
                     <p id="profileHandle">@username</p>
-                    <p id="profileBio" class="bio-text">Your bio will appear here after fetching.</p>
+                    <p id="profileBio" class="bio-text">Never accept the world as it appears to be, dare to see it for
+                        what it could be.</p>
                 </div>
 
                 <div class="stats-row">
@@ -144,18 +145,10 @@
 
     <footer class="app-footer">
         <div class="ad-container">
-            <a href="https://wa.me/5584999034089" target="_blank" class="ad-text-link">
-                <span class="ad-text-label" data-i18n="ad_text">Advertise here for just R$9,90</span>
-            </a>
-
-            <!-- Fallback Ad (Image Only) -->
-            <div class="ad-fallback" title="Advertise with us">
-                <img src="ad_fallback.png" alt="Advertise Here" id="adImage">
-            </div>
-
-            <!-- AdSense Auto Ads (Will overlay or displace if loaded) -->
-            <ins class="adsbygoogle" style="display:block; margin-top:20px;" data-ad-client="ca-pub-7467411748752837"
-                data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <!-- AdSense Auto Ads will likely place ads here or full-screen -->
+            <!-- We can also place a specific unit here if you create one later -->
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7467411748752837" data-ad-slot="auto"
+                data-ad-format="auto" data-full-width-responsive="true"></ins>
             <script>
                 (adsbygoogle = window.adsbygoogle || []).push({});
             </script>

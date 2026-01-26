@@ -36,8 +36,7 @@ body {
     min-height: 100vh;
     line-height: 1.6;
     /* Increased spacing */
-    /* Unify transitions for subtle mode switch */
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Header */
@@ -161,26 +160,7 @@ body {
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    /* Add Pulse */
-    animation: pulseSubtle 3s infinite;
-}
-
-/* Pulse Animation */
-@keyframes pulseSubtle {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(0, 149, 246, 0.4);
-    }
-
-    70% {
-        transform: scale(1.02);
-        box-shadow: 0 0 0 6px rgba(0, 149, 246, 0);
-    }
-
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(0, 149, 246, 0);
-    }
+    transition: transform 0.1s ease;
 }
 
 .btn-primary:active {
@@ -194,7 +174,9 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 24px;
-    margin-top: 40px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    /* Gap added */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
 
@@ -339,12 +321,13 @@ body {
 /* FAB Button */
 .fab-btn {
     pointer-events: auto;
+    /* Enable clicks */
     position: absolute;
     bottom: 30px;
-    right: 20px;
+    right: 30px;
 
-    /* Increased size (~35% larger than 64px = ~86px) */
     width: 86px;
+    /* Increased by 35% */
     height: 86px;
     border-radius: 50%;
     background-color: var(--accent-color);
@@ -360,28 +343,17 @@ body {
 }
 
 .fab-btn svg {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
 }
 
-/* ... existing hover ... */
 .fab-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Mobile Constraint for FAB */
-@media (max-width: 768px) {
-    .fab-btn {
-        right: 20px;
-        bottom: 20px;
-        width: 72px;
-        /* Slightly smaller on mobile but still big */
-        height: 72px;
-    }
-}
 
-/* ... existing secondary-btn ... */
+
 .secondary-btn {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -400,37 +372,34 @@ body {
     border-color: var(--text-primary);
 }
 
-/* Grid Container - Reduce Bottom Gap */
+/* Grid Container */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2px;
+    /* Tighter gap for "almost all horizontal space" */
     width: 100%;
-    /* Further reduced padding-bottom (was 60px) */
-    padding-bottom: 20px;
+    padding-bottom: 100px;
+    /* Space for FAB */
     margin: 0 auto;
 }
 
-.grid-wrapper-relative {
-    position: relative;
-    max-width: 100%;
-    margin-bottom: 0px;
-    /* Removed margin completely */
-}
-
-/* ... existing grid items ... */
+/* Grid Aspect Ratios */
 .grid-item {
     position: relative;
-    background-color: var(--card-bg);
+    background-color: #f0f0f0;
+    /* Light gray slot */
     overflow: hidden;
     cursor: grab;
     transition: transform 0.2s ease, opacity 0.2s ease;
+    /* Default Square 1:1 */
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    color: var(--text-muted);
+    color: #a0a0a0;
+    /* Darker gray, but not too dark */
     user-select: none;
     border-radius: 2px;
 }
@@ -446,12 +415,14 @@ body {
     object-fit: cover;
     display: block;
     pointer-events: none;
+    /* Prevent browser drag of image, we drag container */
 }
 
 .grid-item:active {
     cursor: grabbing;
 }
 
+/* Drag State */
 .grid-item.dragging {
     opacity: 0.5;
     transform: scale(0.95);
@@ -470,99 +441,63 @@ body {
     padding: 60px 20px;
 }
 
-.footer-link {
-    color: var(--accent-color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: opacity 0.2s;
-}
-
-.footer-link:hover {
-    opacity: 0.8;
-}
-
-/* Ad Styles */
-.ad-container {
-    margin-bottom: 20px;
-}
-
-.ad-text-link {
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-block;
-}
-
-.ad-text-link:hover .ad-text-label {
-    color: var(--accent-color);
-    text-decoration: underline;
-}
-
-.ad-text-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    transition: color 0.2s;
-}
-
-.ad-fallback {
-    display: block;
-    max-width: 100%;
-    /* Allow full width */
-    width: 728px;
-    /* Target width */
-    margin: 0 auto;
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s;
-}
-
-.ad-fallback:hover {
-    transform: translateY(-2px);
-}
-
-.ad-fallback img {
+.ad-placeholder {
+    background: var(--bg-primary);
+    height: 120px;
     width: 100%;
-    height: auto;
-    display: block;
+    max-width: 728px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
-
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .app-main {
         padding: 0;
-        /* Full Width Main on Mobile */
+        /* Full width for grid */
+        overflow-x: hidden;
+        /* Prevent horizontal scroll */
     }
 
+    /* Add padding back to content sections so they don't touch edges */
     .search-hero,
     .profile-header,
-    .grid-controls {
-        padding: 0 20px;
-        /* Keep padding for content but NOT grid */
-        /* margin also needs adjustment if it was affecting width */
-    }
-
-    .grid-wrapper-relative {
-        /* Ensure specific full width for grid wrapper */
+    .grid-controls,
+    .instructions {
+        padding-left: 20px;
+        padding-right: 20px;
         width: 100%;
         max-width: 100%;
-        margin-left: 0;
-        margin-right: 0;
+        box-sizing: border-box;
     }
 
+    /* Ensure specific margins are maintained */
     .search-hero {
-        margin: 40px auto 60px;
+        margin: 40px auto 30px;
     }
 
+    .profile-header {
+        margin-bottom: 30px;
+    }
+
+    .grid-controls {
+        margin-bottom: 20px;
+    }
+
+    /* Font Sizes */
     .search-hero h1 {
         font-size: 2rem;
     }
 
+    /* Layout Adjustments */
     .search-bar-hero {
         flex-direction: column;
     }
@@ -570,11 +505,6 @@ body {
     .search-bar-hero input,
     .search-bar-hero button {
         width: 100%;
-        max-width: 100%;
-    }
-
-    .grid-container {
-        gap: 2px;
     }
 
     .profile-header {
@@ -585,5 +515,26 @@ body {
 
     .app-header {
         padding: 0 20px;
+    }
+
+    /* Grid Specifics - Edge to Edge */
+    .grid-container {
+        gap: 2px;
+        padding-bottom: 120px;
+        /* Space for FAB */
+    }
+
+    /* FAB - Ensure it is LARGE and positioned correctly */
+    .fab-btn {
+        right: 20px;
+        bottom: 30px;
+        width: 86px !important;
+        /* Force Override */
+        height: 86px !important;
+    }
+
+    .fab-btn svg {
+        width: 36px;
+        height: 36px;
     }
 }

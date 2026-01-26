@@ -5,6 +5,7 @@ const app = express();
 const PORT = 3005;
 
 app.use(cors());
+app.use(express.static('.')); // Serve static files from current directory
 
 // Validated Web Profile Info Scraper (Scrapfly Strategy)
 app.get('/api/user/:username', async (req, res) => {

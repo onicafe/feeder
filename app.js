@@ -4,135 +4,39 @@
  */
 
 // --- Layer 1: Data / State (Store) ---
-state: {
-    profile: {
-        username: null,
+const AppStore = {
+    state: {
+        profile: {
+            username: null,
             avatarUrl: null,
-                followers: null,
-                    fetched: false
-    },
-    grid: Array.from({ length: 9 }).map((_, i) => ({
-        id: crypto.randomUUID(),
-        type: 'empty',
-        url: null,
-        file: null
-    })),
-        user: null, // Legacy support if needed
-            dragSourceIndex: null
-},
-
-// Action: Update Grid Item
-updateGridItem(index, type, url, file = null) {
-    if (index < 0 || index >= 9) return;
-    this.state.grid[index] = {
-        ...this.state.grid[index],
-        type,
-        url,
-        file
-    };
-    RenderEngine.renderGrid();
-},
-
-// Action: Add New Post (Shift array right)
-addPost(file) {
-    const url = URL.createObjectURL(file);
-
-    // Remove last item, add new item at start
-    this.state.grid.pop();
-    this.state.grid.unshift({
-        id: crypto.randomUUID(),
-        type: 'local_upload',
-        url: url,
-        file: file
-    });
-
-    RenderEngine.renderGrid();
-},
-
-// Action: Swap Items (Drag & Drop)
-swapItems(fromIndex, toIndex) {
-    const grid = this.state.grid;
-    [grid[fromIndex], grid[toIndex]] = [grid[toIndex], grid[fromIndex]];
-    this.saveState();
-    RenderEngine.renderGrid();
-},
-
-// Action: Set Profile
-setProfile(data) {
-    this.state.profile = { ...data, fetched: true };
-    this.saveState();
-    RenderEngine.renderProfile();
-},
-
-// Action: Populate Grid from Fetch
-populateGrid(imageUrls) {
-    // "Infinite" Grid support: Use the number of images returned, or 9 (whichever is greater)
-    // This allows the user to see everything we fetched.
-    // Requested Update: Show only a 3x3 grid (9 items)
-    const gridLength = 9;
-    const slicedUrls = imageUrls.slice(0, 9);
-
-    const newGrid = Array.from({ length: gridLength }).map((_, i) => {
-        const url = slicedUrls[i] || null;
-        return {
+            followers: null,
+            fetched: false
+        },
+        grid: Array.from({ length: 9 }).map((_, i) => ({
             id: crypto.randomUUID(),
-            type: url ? 'instagram_fetch' : 'empty',
-            url: url,
+            type: 'empty',
+            url: null,
             file: null
+        }))
+    },
+
+    // Action: Update Grid Item
+    updateGridItem(index, type, url, file = null) {
+        if (index < 0 || index >= 9) return;
+        this.state.grid[index] = {
+            ...this.state.grid[index],
+            type,
+            url,
+            file
         };
-    });
+        RenderEngine.renderGrid();
+    },
 
-    this.state.grid = newGrid;
-    this.saveState();
-    RenderEngine.renderGrid();
-},
-
-// Persistence Layer
-saveState() {
-    try {
-        // Clean grid: Local uploads (Blobs) cannot be saved easily.
-        // We strip them to avoid errors.
-        const cleanGrid = this.state.grid.map(item => {
-            if (item.type === 'local_upload') {
-                return { ...item, url: null, file: null, type: 'empty' };
-            }
-            return item;
-        });
-
-        const payload = {
-            profile: this.state.profile,
-            grid: cleanGrid
-        };
-
-        localStorage.setItem('feeder_state_v1', JSON.stringify(payload));
-    } catch (e) {
-        console.warn('Failed to save state:', e);
-    }
-},
-
-loadState() {
-    try {
-        const raw = localStorage.getItem('feeder_state_v1');
-        if (raw) {
-            const data = JSON.parse(raw);
-            if (data.profile) this.state.profile = data.profile;
-            if (data.grid) {
-                this.state.grid = data.grid.map(item => ({ ...item, file: null }));
-            }
-            RenderEngine.renderProfile();
-            RenderEngine.renderGrid();
-        }
-    } catch (e) {
-        console.warn('Failed to load state:', e);
-    }
-},
-
-// Multiple Post Upload
-addPosts(files) {
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach(file => {
+    // Action: Add New Post (Shift array right)
+    addPost(file) {
         const url = URL.createObjectURL(file);
+
+        // Remove last item, add new item at start
         this.state.grid.pop();
         this.state.grid.unshift({
             id: crypto.randomUUID(),
@@ -140,10 +44,105 @@ addPosts(files) {
             url: url,
             file: file
         });
-    });
 
-    RenderEngine.renderGrid();
-}
+        RenderEngine.renderGrid();
+    },
+
+    // Action: Swap Items (Drag & Drop)
+    swapItems(fromIndex, toIndex) {
+        const grid = this.state.grid;
+        [grid[fromIndex], grid[toIndex]] = [grid[toIndex], grid[fromIndex]];
+        this.saveState();
+        RenderEngine.renderGrid();
+    },
+
+    // Action: Set Profile
+    setProfile(data) {
+        this.state.profile = { ...data, fetched: true };
+        this.saveState();
+        RenderEngine.renderProfile();
+    },
+
+    // Action: Populate Grid from Fetch
+    populateGrid(imageUrls) {
+        // "Infinite" Grid support: Use the number of images returned, or 9 (whichever is greater)
+        // This allows the user to see everything we fetched.
+        // Requested Update: Show only a 3x3 grid (9 items)
+        const gridLength = 9;
+        const slicedUrls = imageUrls.slice(0, 9);
+
+        const newGrid = Array.from({ length: gridLength }).map((_, i) => {
+            const url = slicedUrls[i] || null;
+            return {
+                id: crypto.randomUUID(),
+                type: url ? 'instagram_fetch' : 'empty',
+                url: url,
+                file: null
+            };
+        });
+
+        this.state.grid = newGrid;
+        this.saveState();
+        RenderEngine.renderGrid();
+    },
+
+    // Persistence Layer
+    saveState() {
+        try {
+            // Clean grid: Local uploads (Blobs) cannot be saved easily.
+            // We strip them to avoid errors.
+            const cleanGrid = this.state.grid.map(item => {
+                if (item.type === 'local_upload') {
+                    return { ...item, url: null, file: null, type: 'empty' };
+                }
+                return item;
+            });
+
+            const payload = {
+                profile: this.state.profile,
+                grid: cleanGrid
+            };
+
+            localStorage.setItem('feeder_state_v1', JSON.stringify(payload));
+        } catch (e) {
+            console.warn('Failed to save state:', e);
+        }
+    },
+
+    loadState() {
+        try {
+            const raw = localStorage.getItem('feeder_state_v1');
+            if (raw) {
+                const data = JSON.parse(raw);
+                if (data.profile) this.state.profile = data.profile;
+                if (data.grid) {
+                    this.state.grid = data.grid.map(item => ({ ...item, file: null }));
+                }
+                RenderEngine.renderProfile();
+                RenderEngine.renderGrid();
+            }
+        } catch (e) {
+            console.warn('Failed to load state:', e);
+        }
+    },
+
+    // Multiple Post Upload
+    addPosts(files) {
+        if (!files || files.length === 0) return;
+
+        Array.from(files).forEach(file => {
+            const url = URL.createObjectURL(file);
+            this.state.grid.pop();
+            this.state.grid.unshift({
+                id: crypto.randomUUID(),
+                type: 'local_upload',
+                url: url,
+                file: file
+            });
+        });
+
+        RenderEngine.renderGrid();
+    }
 };
 
 // --- Layer 2: Navigation / Logic (Render Engine) ---
@@ -176,15 +175,17 @@ const RenderEngine = {
     renderProfile() {
         const p = AppStore.state.profile;
         if (p.fetched) {
+            this.profileEl.classList.remove('hidden');
+
+            this.profileEl.scrollIntoView({ behavior: 'smooth' });
+
             // Text
             document.getElementById('profileRealName').textContent = p.realName || p.username;
             document.getElementById('profileHandle').textContent = `@${p.username}`;
             document.getElementById('profileBio').textContent = p.bio || '';
 
             // Image
-            if (p.avatar) {
-                document.getElementById('profileAvatar').src = this.getProxyUrl(p.avatar);
-            }
+            document.getElementById('profileAvatar').src = this.getProxyUrl(p.avatar);
 
             // Stats
             if (p.stats) {
@@ -379,14 +380,13 @@ const Tools = {
 
         } catch (error) {
             console.error('Fetch Failed:', error);
-
-            // Check if local to give specific advice
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            console.error('Fetch Error:', error);
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 
             if (isLocal) {
-                alert(`Connection Failed: ${error.message}.\n\nTo enable Fetch, you must run the Bridge:\n1. Open Terminal\n2. Run: node server.js`);
+                alert(`Local Server Error: Is 'node server.js' running?\n\nDetails: ${error.message}`);
             } else {
-                alert(`Server Error: ${error.message}.\n\nThe Vercel Function may have crashed or timed out (common with Puppeteer on free tier). Check Vercel logs.`);
+                alert('Server Error: Failed to fetch.\n\nThe Vercel Function may have crashed or timed out (common with Puppeteer on free tier). Check Vercel logs.');
             }
         } finally {
             if (btn) {
@@ -407,16 +407,15 @@ const Localization = {
             'input_placeholder': 'instagram',
             'btn_fetch': 'Fetch Grid',
             'how_to_title': 'How to use:',
-            'how_to_1': '<strong>Fetch</strong> a public profile to load its last 9 posts.',
-            'how_to_2': '<strong>Upload</strong> images to preview them in the grid.',
-            'how_to_3': '<strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.',
+            'how_to_1': '🔍 <strong>Fetch</strong> a public profile to load its last 9 posts.',
+            'how_to_2': '📸 <strong>Upload</strong> images to preview them in the grid.',
+            'how_to_3': '✨ <strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.',
             'stat_posts': 'posts',
             'stat_followers': 'followers',
             'stat_following': 'following',
             'footer_copyright': '© 2026 Feeder by',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group',
-            'ad_text': 'Advertise here for just R$9,90'
+            'footer_group': 'Hex Group'
         },
         'pt': {
             'app_title': 'Visualize seu Grid',
@@ -424,16 +423,15 @@ const Localization = {
             'input_placeholder': 'usuário',
             'btn_fetch': 'Buscar Grid',
             'how_to_title': 'Como usar:',
-            'how_to_1': '<strong>Busque</strong> um perfil público para carregar os últimos 9 posts.',
-            'how_to_2': '<strong>Carregue</strong> imagens para pré-visualizar no grid.',
-            'how_to_3': '<strong>Arraste e Solte</strong> para organizar e encontrar a estética perfeita.',
+            'how_to_1': '🔍 <strong>Busque</strong> um perfil público para carregar os últimos 9 posts.',
+            'how_to_2': '📸 <strong>Carregue</strong> imagens para pré-visualizar no grid.',
+            'how_to_3': '✨ <strong>Arraste e Solte</strong> para organizar e encontrar a estética perfeita.',
             'stat_posts': 'publicações',
             'stat_followers': 'seguidores',
             'stat_following': 'seguindo',
             'footer_copyright': '© 2026 Feeder por',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group',
-            'ad_text': 'Anuncie aqui por apenas R$9,90'
+            'footer_group': 'Hex Group'
         },
         'ja': {
             'app_title': 'グリッドをプレビュー',
@@ -441,16 +439,15 @@ const Localization = {
             'input_placeholder': 'ユーザーネーム',
             'btn_fetch': 'グリッドを取得',
             'how_to_title': '使い方:',
-            'how_to_1': '<strong>取得</strong>: 公開プロフィールから最新の9つの投稿を読み込みます。',
-            'how_to_2': '<strong>アップロード</strong>: 画像をアップロードしてグリッドでプレビューします。',
-            'how_to_3': '<strong>ドラッグ＆ドロップ</strong>: 並べ替えて、完璧な美しさを見つけます。',
+            'how_to_1': '🔍 <strong>取得</strong>: 公開プロフィールから最新の9つの投稿を読み込みます。',
+            'how_to_2': '📸 <strong>アップロード</strong>: 画像をアップロードしてグリッドでプレビューします。',
+            'how_to_3': '✨ <strong>ドラッグ＆ドロップ</strong>: 並べ替えて、完璧な美しさを見つけます。',
             'stat_posts': '投稿',
             'stat_followers': 'フォロワー',
             'stat_following': 'フォロー中',
             'footer_copyright': '© 2026 Feeder 作成者:',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group',
-            'ad_text': 'たった R$9,90 でここに広告を出す'
+            'footer_group': 'Hex Group'
         },
         'zh': {
             'app_title': '预览您的网格',
@@ -458,16 +455,15 @@ const Localization = {
             'input_placeholder': '用户名',
             'btn_fetch': '获取网格',
             'how_to_title': '如何使用:',
-            'how_to_1': '<strong>获取</strong> 公开资料以加载其最近的9篇帖子。',
-            'how_to_2': '<strong>上传</strong> 图片以在网格中预览。',
-            'how_to_3': '<strong>拖放</strong> 以重新排列并找到完美的审美。',
+            'how_to_1': '🔍 <strong>获取</strong> 公开资料以加载其最近的9篇帖子。',
+            'how_to_2': '📸 <strong>上传</strong> 图片以在网格中预览。',
+            'how_to_3': '✨ <strong>拖放</strong> 以重新排列并找到完美的审美。',
             'stat_posts': '帖子',
             'stat_followers': '粉丝',
             'stat_following': '关注',
             'footer_copyright': '© 2026 Feeder 作者',
             'footer_author': 'Iésu Jafé',
-            'footer_group': 'Hex Group',
-            'ad_text': '仅需 R$9,90 在此广告'
+            'footer_group': 'Hex Group'
         }
     },
 
@@ -479,13 +475,19 @@ const Localization = {
     },
 
     detectLanguage() {
-        // 1. Check URL Parameter ?lang=pt
+        // 1. Check URL Parameter (Override): ?lang=pt
         const urlParams = new URLSearchParams(window.location.search);
-        const paramLang = urlParams.get('lang');
+        const urlLang = urlParams.get('lang');
+
+        if (urlLang && this.translations[urlLang]) {
+            this.currentLang = urlLang;
+            console.log(`[i18n] Forced via URL: ${this.currentLang}`);
+            return;
+        }
 
         // 2. Check Browser Language
         const browserLang = navigator.language || navigator.userLanguage;
-        const shortLang = paramLang || browserLang.split('-')[0]; // 'pt-BR' -> 'pt'
+        const shortLang = browserLang.split('-')[0]; // 'pt-BR' -> 'pt'
 
         if (['pt', 'ja', 'zh'].includes(shortLang)) {
             this.currentLang = shortLang;
@@ -493,7 +495,7 @@ const Localization = {
             this.currentLang = 'en'; // Default
         }
 
-        console.log(`[i18n] Detected: ${shortLang} (URL/Nav), Using: ${this.currentLang}`);
+        console.log(`[i18n] Detected: ${browserLang}, Using: ${this.currentLang}`);
     },
 
     applyTranslations() {

@@ -4,39 +4,135 @@
  */
 
 // --- Layer 1: Data / State (Store) ---
-const AppStore = {
-    state: {
-        profile: {
-            username: null,
+state: {
+    profile: {
+        username: null,
             avatarUrl: null,
-            followers: null,
-            fetched: false
-        },
-        grid: Array.from({ length: 9 }).map((_, i) => ({
+                followers: null,
+                    fetched: false
+    },
+    grid: Array.from({ length: 9 }).map((_, i) => ({
+        id: crypto.randomUUID(),
+        type: 'empty',
+        url: null,
+        file: null
+    })),
+        user: null, // Legacy support if needed
+            dragSourceIndex: null
+},
+
+// Action: Update Grid Item
+updateGridItem(index, type, url, file = null) {
+    if (index < 0 || index >= 9) return;
+    this.state.grid[index] = {
+        ...this.state.grid[index],
+        type,
+        url,
+        file
+    };
+    RenderEngine.renderGrid();
+},
+
+// Action: Add New Post (Shift array right)
+addPost(file) {
+    const url = URL.createObjectURL(file);
+
+    // Remove last item, add new item at start
+    this.state.grid.pop();
+    this.state.grid.unshift({
+        id: crypto.randomUUID(),
+        type: 'local_upload',
+        url: url,
+        file: file
+    });
+
+    RenderEngine.renderGrid();
+},
+
+// Action: Swap Items (Drag & Drop)
+swapItems(fromIndex, toIndex) {
+    const grid = this.state.grid;
+    [grid[fromIndex], grid[toIndex]] = [grid[toIndex], grid[fromIndex]];
+    this.saveState();
+    RenderEngine.renderGrid();
+},
+
+// Action: Set Profile
+setProfile(data) {
+    this.state.profile = { ...data, fetched: true };
+    this.saveState();
+    RenderEngine.renderProfile();
+},
+
+// Action: Populate Grid from Fetch
+populateGrid(imageUrls) {
+    // "Infinite" Grid support: Use the number of images returned, or 9 (whichever is greater)
+    // This allows the user to see everything we fetched.
+    // Requested Update: Show only a 3x3 grid (9 items)
+    const gridLength = 9;
+    const slicedUrls = imageUrls.slice(0, 9);
+
+    const newGrid = Array.from({ length: gridLength }).map((_, i) => {
+        const url = slicedUrls[i] || null;
+        return {
             id: crypto.randomUUID(),
-            type: 'empty',
-            url: null,
+            type: url ? 'instagram_fetch' : 'empty',
+            url: url,
             file: null
-        }))
-    },
-
-    // Action: Update Grid Item
-    updateGridItem(index, type, url, file = null) {
-        if (index < 0 || index >= 9) return;
-        this.state.grid[index] = {
-            ...this.state.grid[index],
-            type,
-            url,
-            file
         };
-        RenderEngine.renderGrid();
-    },
+    });
 
-    // Action: Add New Post (Shift array right)
-    addPost(file) {
+    this.state.grid = newGrid;
+    this.saveState();
+    RenderEngine.renderGrid();
+},
+
+// Persistence Layer
+saveState() {
+    try {
+        // Clean grid: Local uploads (Blobs) cannot be saved easily.
+        // We strip them to avoid errors.
+        const cleanGrid = this.state.grid.map(item => {
+            if (item.type === 'local_upload') {
+                return { ...item, url: null, file: null, type: 'empty' };
+            }
+            return item;
+        });
+
+        const payload = {
+            profile: this.state.profile,
+            grid: cleanGrid
+        };
+
+        localStorage.setItem('feeder_state_v1', JSON.stringify(payload));
+    } catch (e) {
+        console.warn('Failed to save state:', e);
+    }
+},
+
+loadState() {
+    try {
+        const raw = localStorage.getItem('feeder_state_v1');
+        if (raw) {
+            const data = JSON.parse(raw);
+            if (data.profile) this.state.profile = data.profile;
+            if (data.grid) {
+                this.state.grid = data.grid.map(item => ({ ...item, file: null }));
+            }
+            RenderEngine.renderProfile();
+            RenderEngine.renderGrid();
+        }
+    } catch (e) {
+        console.warn('Failed to load state:', e);
+    }
+},
+
+// Multiple Post Upload
+addPosts(files) {
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach(file => {
         const url = URL.createObjectURL(file);
-
-        // Remove last item, add new item at start
         this.state.grid.pop();
         this.state.grid.unshift({
             id: crypto.randomUUID(),
@@ -44,105 +140,10 @@ const AppStore = {
             url: url,
             file: file
         });
+    });
 
-        RenderEngine.renderGrid();
-    },
-
-    // Action: Swap Items (Drag & Drop)
-    swapItems(fromIndex, toIndex) {
-        const grid = this.state.grid;
-        [grid[fromIndex], grid[toIndex]] = [grid[toIndex], grid[fromIndex]];
-        this.saveState();
-        RenderEngine.renderGrid();
-    },
-
-    // Action: Set Profile
-    setProfile(data) {
-        this.state.profile = { ...data, fetched: true };
-        this.saveState();
-        RenderEngine.renderProfile();
-    },
-
-    // Action: Populate Grid from Fetch
-    populateGrid(imageUrls) {
-        // "Infinite" Grid support: Use the number of images returned, or 9 (whichever is greater)
-        // This allows the user to see everything we fetched.
-        // Requested Update: Show only a 3x3 grid (9 items)
-        const gridLength = 9;
-        const slicedUrls = imageUrls.slice(0, 9);
-
-        const newGrid = Array.from({ length: gridLength }).map((_, i) => {
-            const url = slicedUrls[i] || null;
-            return {
-                id: crypto.randomUUID(),
-                type: url ? 'instagram_fetch' : 'empty',
-                url: url,
-                file: null
-            };
-        });
-
-        this.state.grid = newGrid;
-        this.saveState();
-        RenderEngine.renderGrid();
-    },
-
-    // Persistence Layer
-    saveState() {
-        try {
-            // Clean grid: Local uploads (Blobs) cannot be saved easily.
-            // We strip them to avoid errors.
-            const cleanGrid = this.state.grid.map(item => {
-                if (item.type === 'local_upload') {
-                    return { ...item, url: null, file: null, type: 'empty' };
-                }
-                return item;
-            });
-
-            const payload = {
-                profile: this.state.profile,
-                grid: cleanGrid
-            };
-
-            localStorage.setItem('feeder_state_v1', JSON.stringify(payload));
-        } catch (e) {
-            console.warn('Failed to save state:', e);
-        }
-    },
-
-    loadState() {
-        try {
-            const raw = localStorage.getItem('feeder_state_v1');
-            if (raw) {
-                const data = JSON.parse(raw);
-                if (data.profile) this.state.profile = data.profile;
-                if (data.grid) {
-                    this.state.grid = data.grid.map(item => ({ ...item, file: null }));
-                }
-                RenderEngine.renderProfile();
-                RenderEngine.renderGrid();
-            }
-        } catch (e) {
-            console.warn('Failed to load state:', e);
-        }
-    },
-
-    // Multiple Post Upload
-    addPosts(files) {
-        if (!files || files.length === 0) return;
-
-        Array.from(files).forEach(file => {
-            const url = URL.createObjectURL(file);
-            this.state.grid.pop();
-            this.state.grid.unshift({
-                id: crypto.randomUUID(),
-                type: 'local_upload',
-                url: url,
-                file: file
-            });
-        });
-
-        RenderEngine.renderGrid();
-    }
+    RenderEngine.renderGrid();
+}
 };
 
 // --- Layer 2: Navigation / Logic (Render Engine) ---

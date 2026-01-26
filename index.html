@@ -22,6 +22,28 @@
     <meta property="og:url" content="https://feeder-preview.vercel.app/">
     <meta property="og:image" content="https://feeder-preview.vercel.app/og-image.jpg">
 
+    <!-- SEO & Indexing -->
+    <link rel="canonical" href="https://feeder-preview.vercel.app/">
+    <meta name="robots" content="index, follow">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Feeder",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A visual planner for Instagram. specific features include grid preview, drag and drop organization, and multi-account support.",
+      "featureList": "Instagram Grid Preview, Drag and Drop Planner, Feed Aesthetic"
+    }
+    </script>
+
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7467411748752837"
         crossorigin="anonymous"></script>
@@ -36,24 +58,29 @@
 <body>
 
     <header class="app-header">
-        <div class="logo">Feeder</div>
+        <div class="header-content">
+            <img src="logo.png" alt="Feeder Logo" class="logo-img">
+            <div class="logo-text">
+                <span class="accent-text">F</span>eeder
+            </div>
+        </div>
     </header>
 
     <main class="app-main">
         <!-- Search Module (Hero) -->
         <section class="search-hero">
-            <h1 data-i18n="app_title">Preview your Grid</h1>
-            <p class="subtitle" data-i18n="app_subtitle">Enter an Instagram username to see how their latest posts look
-                with your new content.
+            <h1 data-i18n="app_title">Free Instagram Grid Planner</h1>
+            <p class="subtitle" data-i18n="app_subtitle">The visual planner for your Instagram Feed. Preview layout,
+                drag & drop aesthetic, no login required.
             </p>
 
             <!-- Instructions Module (Moved Up) -->
             <div class="instructions">
-                <h3 data-i18n="how_to_title">How to use:</h3>
+                <h3 data-i18n="how_to_title">How to plan your feed:</h3>
                 <ol>
-                    <li data-i18n="how_to_1">🔍 <strong>Fetch</strong> a public profile to load its last 9 posts.</li>
-                    <li data-i18n="how_to_2">📸 <strong>Upload</strong> images to preview them in the grid.</li>
-                    <li data-i18n="how_to_3">✨ <strong>Drag & Drop</strong> to rearrange and find the perfect aesthetic.
+                    <li data-i18n="how_to_1">🔍 <strong>Fetch</strong> a profile to start with your current grid.</li>
+                    <li data-i18n="how_to_2">📸 <strong>Upload</strong> photos to preview your future posts.</li>
+                    <li data-i18n="how_to_3">✨ <strong>Drag & Drop</strong> to design your perfect aesthetic.
                     </li>
                 </ol>
             </div>
@@ -94,7 +121,6 @@
             </div>
         </section>
 
-        <!-- Grid Controls -->
         <!-- Grid Controls -->
         <section class="grid-controls">
             <div class="ratio-toggles">
@@ -153,7 +179,7 @@
 
             <!-- Mock Ad / AdSense -->
             <div class="ad-slot">
-                <!-- Mock Image (Shown if AdSense is empty/loading or locally) -->
+                <!-- Mock Image -->
                 <img src="adholder.png" alt="Advertisement" class="mock-ad-image">
 
                 <!-- AdSense Auto Ads -->
@@ -165,11 +191,9 @@
             </div>
         </div>
         <p class="copyright-text">
-            <span data-i18n="footer_copyright">© 2026 Feeder by</span>
+            <span data-i18n="footer_copyright">© 2026 Feeder. Made with 🩵 by</span>
             <a href="https://www.linkedin.com/in/iesujafe/" target="_blank" class="footer-link"
                 data-i18n="footer_author">Iésu Jafé</a>.
-            <a href="https://hex-portfolio-ochre.vercel.app/" target="_blank" class="footer-link"
-                data-i18n="footer_group">Hex Group</a>.
         </p>
     </footer>
 

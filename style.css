@@ -36,7 +36,8 @@ body {
     min-height: 100vh;
     line-height: 1.6;
     /* Increased spacing */
-    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Unify transitions for subtle mode switch */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Header */
@@ -160,9 +161,26 @@ body {
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.1s ease;
     /* Add Pulse */
     animation: pulseSubtle 3s infinite;
+}
+
+/* Pulse Animation */
+@keyframes pulseSubtle {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 149, 246, 0.4);
+    }
+
+    70% {
+        transform: scale(1.02);
+        box-shadow: 0 0 0 6px rgba(0, 149, 246, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 149, 246, 0);
+    }
 }
 
 .btn-primary:active {
@@ -382,14 +400,22 @@ body {
     border-color: var(--text-primary);
 }
 
-/* Grid Container */
+/* Grid Container - Reduce Bottom Gap */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2px;
     width: 100%;
-    padding-bottom: 100px;
+    /* Further reduced padding-bottom (was 60px) */
+    padding-bottom: 20px;
     margin: 0 auto;
+}
+
+.grid-wrapper-relative {
+    position: relative;
+    max-width: 100%;
+    margin-bottom: 0px;
+    /* Removed margin completely */
 }
 
 /* ... existing grid items ... */
@@ -460,6 +486,17 @@ body {
     margin-bottom: 20px;
 }
 
+.ad-text-link {
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.ad-text-link:hover .ad-text-label {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
 .ad-text-label {
     display: block;
     margin-bottom: 8px;
@@ -468,11 +505,15 @@ body {
     letter-spacing: 0.5px;
     color: var(--text-secondary);
     text-transform: uppercase;
+    transition: color 0.2s;
 }
 
 .ad-fallback {
     display: block;
-    max-width: 320px;
+    max-width: 100%;
+    /* Allow full width */
+    width: 728px;
+    /* Target width */
     margin: 0 auto;
     border-radius: 4px;
     overflow: hidden;

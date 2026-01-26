@@ -47,7 +47,7 @@
                 with your new content.
             </p>
 
-            <!-- Instructions Module (Moved Up) -->
+            <!-- Instructions Module (Moved Above Input) -->
             <div class="instructions">
                 <h3 data-i18n="how_to_title">How to use:</h3>
                 <ol>
@@ -58,8 +58,7 @@
                 </ol>
             </div>
 
-            <!-- Input Moved Below Instructions -->
-            <div class="search-bar-hero" style="margin-top: 30px;">
+            <div class="search-bar-hero" style="margin-top: 40px;"> <!-- Added margin for spacing -->
                 <input type="text" id="usernameInput" placeholder="instagram" autofocus>
                 <button id="fetchBtn" class="btn-primary" data-i18n="btn_fetch">Fetch Grid</button>
             </div>
@@ -146,12 +145,14 @@
 
     <footer class="app-footer">
         <div class="ad-container">
-            <span class="ad-text-label" data-i18n="ad_text">Advertise here for just R$9,90</span>
-
-            <!-- Fallback Ad (Always Visible or Conditional) -->
-            <a href="https://wa.me/5584999034089" target="_blank" class="ad-fallback" title="Advertise with us">
-                <img src="ad_fallback.png" alt="Advertise Here" id="adImage">
+            <a href="https://wa.me/5584999034089" target="_blank" class="ad-text-link">
+                <span class="ad-text-label" data-i18n="ad_text">Advertise here for just R$9,90</span>
             </a>
+
+            <!-- Fallback Ad (Image Only) -->
+            <div class="ad-fallback" title="Advertise with us">
+                <img src="ad_fallback.png" alt="Advertise Here" id="adImage">
+            </div>
 
             <!-- AdSense Auto Ads (Will overlay or displace if loaded) -->
             <ins class="adsbygoogle" style="display:block; margin-top:20px;" data-ad-client="ca-pub-7467411748752837"

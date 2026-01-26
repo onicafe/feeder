@@ -176,17 +176,15 @@ const RenderEngine = {
     renderProfile() {
         const p = AppStore.state.profile;
         if (p.fetched) {
-            this.profileEl.classList.remove('hidden');
-
-            this.profileEl.scrollIntoView({ behavior: 'smooth' });
-
             // Text
             document.getElementById('profileRealName').textContent = p.realName || p.username;
             document.getElementById('profileHandle').textContent = `@${p.username}`;
             document.getElementById('profileBio').textContent = p.bio || '';
 
             // Image
-            document.getElementById('profileAvatar').src = this.getProxyUrl(p.avatar);
+            if (p.avatar) {
+                document.getElementById('profileAvatar').src = this.getProxyUrl(p.avatar);
+            }
 
             // Stats
             if (p.stats) {

@@ -529,7 +529,7 @@ body {
     text-decoration: underline;
 }
 
-.promo-link {
+.advertise-link {
     display: block;
     font-weight: 600;
     /* Slightly lighter */
@@ -544,17 +544,17 @@ body {
     /* Subtle fade */
 }
 
-.promo-link:hover {
+.advertise-link:hover {
     transform: scale(1.02);
 }
 
-.promo-slot {
+.ad-slot {
     position: relative;
     max-width: 100%;
     margin: 0 auto 30px;
 }
 
-.mock-promo-image {
+.mock-ad-image {
     width: 40%;
     /* 40% Width as requested */
     height: auto;
@@ -562,7 +562,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.promo-placeholder {
+.ad-placeholder {
     background: var(--bg-primary);
     height: 120px;
     width: 100%;

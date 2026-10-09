@@ -519,9 +519,30 @@ const Localization = {
     }
 };
 
+// --- Layer 5: Analytics (Privacy-First) ---
+const Analytics = {
+    init() {
+        // Track the visit once per session (reloads count as new hits in this simple version, 
+        // to filter reloads requires sessionStorage check, but let's keep it simple for "total usage")
+        this.trackVisit();
+    },
+
+    async trackVisit() {
+        try {
+            // No personal data sent, just a ping.
+            const response = await fetch('/api/analytics', { method: 'POST' });
+            const data = await response.json();
+            console.log('[Analytics] Ping:', data);
+        } catch (e) {
+            console.warn('[Analytics] Failed to ping:', e);
+        }
+    }
+};
+
 // --- Protocol 0: Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     RenderEngine.init();
     Tools.init();
+    Analytics.init(); // <--- Start Tracking
     Localization.init(); // Init i18n
 });

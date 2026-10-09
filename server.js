@@ -8,6 +8,42 @@ app.use(cors());
 app.use(express.static('.')); // Serve static files from current directory
 
 // Validated Web Profile Info Scraper (Scrapfly Strategy)
+const { kv } = require('@vercel/kv'); // Analytics
+
+app.post('/api/analytics', async (req, res) => {
+    try {
+        // 1. Extract Geo-Data from Vercel Headers
+        const country = req.headers['x-vercel-ip-country'] || 'Unknown';
+        const city = req.headers['x-vercel-ip-city'] || 'Unknown';
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+        console.log(`[Analytics] Hit from ${city}, ${country}`);
+
+        if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+            // 2. Increment Global Counter
+            await kv.incr('feeder:visits:total');
+
+            // 3. Increment Country Counter
+            if (country !== 'Unknown') {
+                await kv.incr(`feeder:visits:country:${country}`);
+            }
+
+            // 4. (Optional) Log simple event for detailed view later (expires in 30 days)
+            // await kv.lpush('feeder:events', JSON.stringify({ ip, country, city, date: new Date() }));
+            // await kv.ltrim('feeder:events', 0, 9999); // Keep last 10k
+
+            res.json({ success: true, tracked: true });
+        } else {
+            console.log('[Analytics] KV env vars missing. Skipping write.');
+            res.json({ success: true, tracked: false, mode: 'local' });
+        }
+
+    } catch (error) {
+        console.error('[Analytics] Error:', error);
+        res.status(500).json({ error: 'Analytics Failed' });
+    }
+});
+
 app.get('/api/user/:username', async (req, res) => {
     const { username } = req.params;
     console.log(`[Scraper] Incoming request for: ${username}`);
